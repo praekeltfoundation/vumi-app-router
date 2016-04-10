@@ -1,0 +1,34 @@
+menu_title: 'Welcome to MomConnect'
+entries:
+  - label: FAQs
+    endpoint: faq_endpoint
+  - label: Service Rating
+    endpoint: servicerating_endpoint
+
+receive_inbound_connectors:
+  - messenger_transport
+
+receive_outbound_connectors:
+  - faq_transport
+  - servicerating_transport
+
+routing_table:
+  messenger_transport:
+    default: ["messenger_transport", "default"]  # So replies from the dispatcher can be routed
+    faq_endpoint: ["faq_transport", "default"]
+    servicerating_endpoint: ["servicerating_transport", "default"]
+  faq_transport:
+    default: ["transport", "default"]
+  servicerating_transport:
+    default: ["transport", "default"]
+
+redis_manager:
+  key_prefix: 'vxapprouter'
+  db: 1
+  host: 'redis.service.consul'
+
+middleware:
+  - logging_middleware: vumi.middleware.logging.LoggingMiddleware
+
+logging_middleware:
+  log_level: info
