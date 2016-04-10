@@ -1,10 +1,8 @@
 from vumi.components.session import SessionManager
 from vumi.dispatchers.tests.helpers import DispatcherHelper
 from vumi.tests.helpers import VumiTestCase, PersistenceHelper
-from vumi.tests.utils import LogCatcher
 
 from twisted.internet.defer import inlineCallbacks, succeed
-from twisted.python.failure import Failure
 
 from vxapprouter.router import ApplicationDispatcher
 
