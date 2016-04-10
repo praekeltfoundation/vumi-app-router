@@ -1,4 +1,5 @@
-menu_title: 'Welcome to MomConnect'
+menu_title:
+  content: 'Welcome to MomConnect'
 entries:
   - label: FAQs
     endpoint: faq_endpoint
