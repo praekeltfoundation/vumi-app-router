@@ -27,7 +27,7 @@ deploy:
   distributions: sdist bdist_wheel
   user: Praekelt
   password:
-    secure: "generate with travis encrypt"
+    secure: "vKt418zAsC6Wnnm+uF+BHzgHAdLKjESZCoS1EHGJEFXAHCswOxYly3Thdk3W7DIkwCXFHmEUa88Ek0EVWFWmBJR6cNc03NMXWuuf+H4RKJAL7BdlNjrGtNIokw09cFGEM8DxFBulrAZC4SrhodGMMGK88IIyZbqMKQp8oauPzUSdeIL+ejTPLXL+YJ0z3726ibZuJ9yv4sN/DyRA8Mud083e+uB8P9lWi9FGBmY5x/HLSG1DqGJhItjbm3RhNAAaL8VBXMLyKfjuKHqqF/U/gb+6pq/tT8IZf6z+SIlJQCUUoNh16Qu0SdPr9eC8rAHOYaVz+1m+0R3u1dOu+J+2ALNnpEaKe9KnMBOX/1LANu6VfhaDV2ejk9u+Ew4PJfFX0YxNYIj9jyMiQPq21ACKoscy5UiadrfwoDYd4yYsmzAc7EOEfgO8q+bUi/f9O0Ja4Y8bZEaR5ZKdaBodKU2BzHIbhwu49DUWsP+qtqUojyHoEaDLrXp7O+92OWMKUFQiyx4l57ZQ2Ynj8RdlUDqlBqHcPR8R7hkZZsIFW9tw320pf2pHfkgq7OL82FhW/UjcQbMdopDQqRmI3nXhDGZtKCeJfF2+McaMNQ13ngFTNdVXsWn0RkNIhlgxDNDzQ+6jwoKI93wkU8KHpToebnbHCvoT0fpBCKs11tINx028rLw="
   on:
     tags: true
     all_branches: true
