@@ -4,10 +4,11 @@ import json
 from twisted.internet.defer import inlineCallbacks
 
 from vumi import log
-from vumi.dispatchers.endpoint_dispatchers import Dispatcher
 from vumi.components.session import SessionManager
 from vumi.config import ConfigDict, ConfigList, ConfigInt, ConfigText
+from vumi.dispatchers.endpoint_dispatchers import Dispatcher
 from vumi.message import TransportUserMessage
+from vumi.persist.txredis_manager import TxRedisManager
 
 
 class ApplicationDispatcherConfig(Dispatcher.CONFIG_CLASS):
@@ -17,6 +18,10 @@ class ApplicationDispatcherConfig(Dispatcher.CONFIG_CLASS):
         ("Maximum amount of time in seconds to keep session data around. "
          "Defaults to 5 minutes."),
         default=5 * 60, static=True)
+    message_expiry = ConfigInt(
+        ("Maximum amount of time in seconds to keep message data around. "
+         "This is kept to handle async events. Defaults to 2 days."),
+        default=60 * 60 * 24 * 2, static=True)
     redis_manager = ConfigDict(
         "Redis client configuration.", default={}, static=True)
     # Dynamic, per-message configuration
@@ -66,20 +71,22 @@ class ApplicationDispatcher(Dispatcher):
     STATE_SELECTED = "selected"
     STATE_BAD_INPUT = "bad_input"
 
+    @inlineCallbacks
     def setup_dispatcher(self):
+        yield super(ApplicationDispatcher, self).setup_dispatcher()
         self.handlers = {
             self.STATE_START: self.handle_state_start,
             self.STATE_SELECT: self.handle_state_select,
             self.STATE_SELECTED: self.handle_state_selected,
             self.STATE_BAD_INPUT: self.handle_state_bad_input,
         }
-        return super(ApplicationDispatcher, self).setup_dispatcher()
+        config = self.get_static_config()
+        txrm = yield TxRedisManager.from_config(config.redis_manager)
+        self.redis = txrm.sub_manager(self.worker_name)
 
     def session_manager(self, config):
-        return SessionManager.from_redis_config(
-            config.redis_manager,
-            key_prefix=self.worker_name,
-            max_session_length=config.session_expiry)
+        return SessionManager(
+            self.redis, max_session_length=config.session_expiry)
 
     def forwarded_message(self, msg, **kwargs):
         copy = TransportUserMessage(**msg.payload)
@@ -196,7 +203,6 @@ class ApplicationDispatcher(Dispatcher):
                         connector_name,))
             return None
         target = endpoint_routing.get(endpoint_name)
-        print 'target', target
         if target is None:
             log.warning("No routing information for endpoint '%s' on '%s'" % (
                         endpoint_name, connector_name,))
@@ -262,13 +268,32 @@ class ApplicationDispatcher(Dispatcher):
         session = yield session_manager.load_session(user_id)
         if session and (session_event == TransportUserMessage.SESSION_CLOSE):
             yield session_manager.clear_session(user_id)
+
+        yield self.cache_outbound_user_id(msg['message_id'],
+                                          msg['to_addr'])
         target = self.find_target(config, msg, connector_name)
         if target is None:
             return
         yield self.publish_outbound(msg, target[0], target[1])
 
+    def mk_msg_key(self, message_id):
+        return ':'.join(['cache', message_id])
+
+    @inlineCallbacks
+    def cache_outbound_user_id(self, message_id, user_id):
+        key = self.mk_msg_key(message_id)
+        yield self.redis.setex(
+            key, self.get_static_config().message_expiry, user_id)
+
+    def get_cached_user_id(self, message_id):
+        return self.redis.get(self.mk_msg_key(message_id))
+
+    @inlineCallbacks
     def process_event(self, config, event, connector_name):
-        target = self.find_target(config, event, connector_name)
+        user_id = yield self.get_cached_user_id(event['user_message_id'])
+        session_manager = yield self.session_manager(config)
+        session = yield session_manager.load_session(user_id)
+        target = self.find_target(config, event, connector_name, session)
         if target is None:
             return
-        return self.publish_event(event, target[0], target[1])
+        yield self.publish_event(event, target[0], target[1])

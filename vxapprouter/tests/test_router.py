@@ -484,3 +484,21 @@ class TestApplicationRouter(VumiTestCase):
             'state': ApplicationDispatcher.STATE_SELECT,
             'endpoints': '["flappy-bird"]',
         })
+
+    @inlineCallbacks
+    def test_inbound_event_routing(self):
+        dispatcher = yield self.get_dispatcher()
+
+        yield self.setup_session('123', {
+            'state': ApplicationDispatcher.STATE_SELECTED,
+            'active_endpoint': 'flappy-bird',
+            'endpoints': '["flappy-bird"]',
+        })
+        yield dispatcher.cache_outbound_user_id(
+            'message_id', '123')
+
+        event = yield self.ch('transport').make_dispatch_ack(
+            {'message_id': 'message_id'})
+        self.assert_rkeys_used('transport.event', 'app1.event')
+        self.assert_dispatched_endpoint(
+            event, 'default', self.ch('app1').get_dispatched_events())
