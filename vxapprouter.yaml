@@ -19,9 +19,9 @@ routing_table:
     faq_endpoint: ["faq_transport", "default"]
     servicerating_endpoint: ["servicerating_transport", "default"]
   faq_transport:
-    default: ["transport", "default"]
+    default: ["messenger_transport", "default"]
   servicerating_transport:
-    default: ["transport", "default"]
+    default: ["messenger_transport", "default"]
 
 redis_manager:
   key_prefix: 'vxapprouter'
