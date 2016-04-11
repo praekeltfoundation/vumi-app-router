@@ -35,7 +35,10 @@ class ApplicationDispatcherConfig(Dispatcher.CONFIG_CLASS):
     invalid_input_message = ConfigText(
         "Prompt to display when warning about an invalid choice",
         default=("That is an incorrect choice. Please enter the number "
-                 "of the menu item you wish to choose.\n\n 1) Try Again"))
+                 "of the menu item you wish to choose."))
+    try_again_message = ConfigText(
+        "What text to display when the user needs to try again.",
+        default="Try Again")
     error_message = ConfigText(
         ("Prompt to display when a configuration change invalidates "
          "an active session."),
@@ -127,6 +130,10 @@ class ApplicationDispatcher(Dispatcher):
     def make_first_reply(self, config, session, msg):
         return msg.reply(self.create_menu(config))
 
+    def make_invalid_input_reply(self, config, session, msg):
+        return msg.reply('%s\n\n1. %s' % (
+            config.invalid_input_message, config.try_again_message))
+
     def handle_state_start(self, config, session, msg):
         """
         When presenting the menu, we also store the list of endpoints
@@ -144,7 +151,7 @@ class ApplicationDispatcher(Dispatcher):
     def handle_state_select(self, config, session, msg):
         endpoint = self.get_endpoint_for_choice(msg, session)
         if endpoint is None:
-            reply_msg = msg.reply(config.invalid_input_message)
+            reply_msg = self.make_invalid_input_reply(config, session, msg)
             return StateResponse(self.STATE_BAD_INPUT, outbound=[reply_msg])
 
         if endpoint not in self.target_endpoints(config):
@@ -176,7 +183,7 @@ class ApplicationDispatcher(Dispatcher):
     def handle_state_bad_input(self, config, session, msg):
         choice = self.get_menu_choice(msg, (1, 1))
         if choice is None:
-            reply_msg = msg.reply(config.invalid_input_message)
+            reply_msg = self.make_invalid_input_reply(config, session, msg)
             return StateResponse(self.STATE_BAD_INPUT, outbound=[reply_msg])
         else:
             return self.handle_state_start(config, session, msg)
@@ -337,4 +344,23 @@ class MessengerApplicationDispatcher(ApplicationDispatcher):
                     }
                 } for (index, entry) in enumerate(config.entries)]
             }
+        return msg
+
+    def make_invalid_input_reply(self, config, session, msg):
+        msg = super(
+            MessengerApplicationDispatcher, self).make_invalid_input_reply(
+                config, session, msg)
+        msg['helper_metadata']['messenger'] = {
+            'template_type': 'generic',
+            'title': config.menu_title,
+            'subtitle': config.invalid_input_message,
+            'image_url': urlunparse(config.image_url),
+            'buttons': [{
+                'title': config.try_again_message,
+                'payload': {
+                    "content": '1',
+                    "in_reply_to": msg['message_id'],
+                }
+            }]
+        }
         return msg
