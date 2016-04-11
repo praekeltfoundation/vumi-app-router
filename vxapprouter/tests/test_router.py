@@ -22,7 +22,7 @@ def raise_error(*args, **kw):
 class TestApplicationRouter(VumiTestCase):
 
     DISPATCHER_CONFIG = {
-        'invalid_input_message': 'Bad choice.\n1) Try Again',
+        'invalid_input_message': 'Bad choice.',
         'error_message': 'Oops! Sorry!',
         'entries': [
             {
@@ -190,7 +190,7 @@ class TestApplicationRouter(VumiTestCase):
         # assert that the user received a response
         [msg] = self.ch("transport").get_dispatched_outbound()
         self.assertEqual(msg['content'],
-                         'Bad choice.\n1) Try Again')
+                         'Bad choice.\n\n1. Try Again')
 
         yield self.assert_session('123', {
             'state': ApplicationDispatcher.STATE_BAD_INPUT,
@@ -218,7 +218,7 @@ class TestApplicationRouter(VumiTestCase):
         # assert that the user received a response
         [msg] = self.ch("transport").get_dispatched_outbound()
         self.assertEqual(msg['content'],
-                         'Bad choice.\n1) Try Again')
+                         'Bad choice.\n\n1. Try Again')
 
         yield self.assert_session('123', {
             'state': ApplicationDispatcher.STATE_BAD_INPUT,
