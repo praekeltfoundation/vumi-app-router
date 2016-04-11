@@ -296,8 +296,13 @@ class ApplicationDispatcher(Dispatcher):
         session_manager = yield self.session_manager(config)
         session = yield session_manager.load_session(user_id)
         log.msg('Session for %s: %s', (user_id, session))
-        target = self.find_target(config, event, connector_name, session)
-        log.msg('Target for %s: %s', (user_id, target))
+
+        if not session['active_endpoint']:
+            target = ("default", connector_name)
+        else:
+            target = self.find_target(config, event, connector_name, session)
+
         if target is None:
             return
+
         yield self.publish_event(event, target[0], target[1])
