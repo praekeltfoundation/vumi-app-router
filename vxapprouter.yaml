@@ -1,6 +1,7 @@
 menu_title: 'Welcome to MomConnect'
 sub_title: 'Please select one of the follow applications:'
 image_url: 'https://www.evernote.com/l/ATmWQI24r-RLoYnAL1eOgbMUFWyFqcPJVpsB/image.jpg'
+invalid_input_message: 'Sorry! That is not one of the available options.'
 entries:
   - label: FAQs
     endpoint: faq_endpoint
