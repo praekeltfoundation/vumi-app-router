@@ -1,5 +1,6 @@
 # -*- test-case-name: vxapprouter.tests.test_router -*-
 import json
+from urlparse import urlunparse
 
 from twisted.internet.defer import inlineCallbacks
 
@@ -326,8 +327,8 @@ class MessengerApplicationDispatcher(ApplicationDispatcher):
             msg['helper_metadata']['messenger'] = {
                 'template_type': 'generic',
                 'title': config.menu_title,
-                'sub_title': config.sub_title,
-                'image_url': config.image_url,
+                'subtitle': config.sub_title,
+                'image_url': urlunparse(config.image_url),
                 'buttons': [{
                     'title': entry['label'],
                     'payload': str(index + 1)
