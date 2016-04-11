@@ -26,9 +26,8 @@ class ApplicationDispatcherConfig(Dispatcher.CONFIG_CLASS):
     redis_manager = ConfigDict(
         "Redis client configuration.", default={}, static=True)
     # Dynamic, per-message configuration
-    menu_title = ConfigDict(
-        "Content for the menu title",
-        default={'content': "Please select a choice."})
+    menu_title = ConfigText(
+        "Content for the menu title", default="Please select a choice.")
     entries = ConfigList(
         "A list of application endpoints and associated labels",
         default=[])
@@ -193,7 +192,7 @@ class ApplicationDispatcher(Dispatcher):
 
     def create_menu(self, config):
         labels = [entry['label'] for entry in config.entries]
-        return (config.menu_title['content'] + "\n" + mkmenu(labels))
+        return (config.menu_title + "\n" + mkmenu(labels))
 
     def make_error_reply(self, msg, config):
         return msg.reply(config.error_message, continue_session=False)
@@ -310,7 +309,6 @@ class ApplicationDispatcher(Dispatcher):
 
 
 class MessengerApplicationDispatcherConfig(ApplicationDispatcher.CONFIG_CLASS):
-    title = ConfigText('The title')
     sub_title = ConfigText('The subtitle')
     image_url = ConfigUrl('The URL for an image')
 
@@ -327,7 +325,7 @@ class MessengerApplicationDispatcher(ApplicationDispatcher):
         if len(config.entries) <= 3:
             msg['helper_metadata']['messenger'] = {
                 'template_type': 'generic',
-                'title': config.title,
+                'title': config.menu_title,
                 'sub_title': config.sub_title,
                 'image_url': config.image_url,
                 'buttons': [{

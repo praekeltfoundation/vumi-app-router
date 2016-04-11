@@ -1,5 +1,6 @@
-menu_title:
-  content: 'Welcome to MomConnect'
+menu_title: 'Welcome to MomConnect'
+sub_title: 'Please select one of the follow applications:'
+image_url: 'https://www.evernote.com/l/ATmWQI24r-RLoYnAL1eOgbMUFWyFqcPJVpsB/image.jpg'
 entries:
   - label: FAQs
     endpoint: faq_endpoint
