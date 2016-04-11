@@ -297,7 +297,7 @@ class ApplicationDispatcher(Dispatcher):
         session = yield session_manager.load_session(user_id)
         log.msg('Session for %s: %s', (user_id, session))
 
-        if not session['active_endpoint']:
+        if not session.get('active_endpoint'):
             target = ("default", connector_name)
         else:
             target = self.find_target(config, event, connector_name, session)
