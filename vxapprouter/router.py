@@ -331,7 +331,10 @@ class MessengerApplicationDispatcher(ApplicationDispatcher):
                 'image_url': urlunparse(config.image_url),
                 'buttons': [{
                     'title': entry['label'],
-                    'payload': str(index + 1)
+                    'payload': json.dumps({
+                        "content": str(index + 1),
+                        "in_reply_to": msg['message_id'],
+                    })
                 } for (index, entry) in enumerate(config.entries)]
             }
         return msg
