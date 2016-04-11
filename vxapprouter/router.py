@@ -295,11 +295,8 @@ class ApplicationDispatcher(Dispatcher):
     @inlineCallbacks
     def process_event(self, config, event, connector_name):
         user_id = yield self.get_cached_user_id(event['user_message_id'])
-        log.msg('Logged user_id for %s is %s' % (
-            event['user_message_id'], user_id))
         session_manager = yield self.session_manager(config)
         session = yield session_manager.load_session(user_id)
-        log.msg('Session for %s: %s', (user_id, session))
 
         if not session.get('active_endpoint'):
             target = None
@@ -328,7 +325,7 @@ class MessengerApplicationDispatcher(ApplicationDispatcher):
 
         # Magically render a Messenger menu if less than 3 items.
         if len(config.entries) <= 3:
-            msg.helper_metadata['messenger'] = {
+            msg['helper_metadata']['messenger'] = {
                 'template_type': 'generic',
                 'title': config.title,
                 'sub_title': config.sub_title,
