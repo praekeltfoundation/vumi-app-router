@@ -293,6 +293,7 @@ class ApplicationDispatcher(Dispatcher):
         user_id = yield self.get_cached_user_id(event['user_message_id'])
         session_manager = yield self.session_manager(config)
         session = yield session_manager.load_session(user_id)
+        log.msg('Session: ', session)
         target = self.find_target(config, event, connector_name, session)
         if target is None:
             return
