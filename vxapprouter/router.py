@@ -5,7 +5,8 @@ from twisted.internet.defer import inlineCallbacks
 
 from vumi import log
 from vumi.components.session import SessionManager
-from vumi.config import ConfigDict, ConfigList, ConfigInt, ConfigText
+from vumi.config import (
+    ConfigDict, ConfigList, ConfigInt, ConfigText, ConfigUrl)
 from vumi.dispatchers.endpoint_dispatchers import Dispatcher
 from vumi.message import TransportUserMessage
 from vumi.persist.txredis_manager import TxRedisManager
@@ -123,6 +124,9 @@ class ApplicationDispatcher(Dispatcher):
                 return None
             return value
 
+    def make_first_reply(self, config, session, msg):
+        return msg.reply(self.create_menu(config))
+
     def handle_state_start(self, config, session, msg):
         """
         When presenting the menu, we also store the list of endpoints
@@ -130,7 +134,7 @@ class ApplicationDispatcher(Dispatcher):
         these endpoints and retrieve the candidate endpoint based
         on the user's menu choice.
         """
-        reply_msg = msg.reply(self.create_menu(config))
+        reply_msg = self.make_first_reply(config, session, msg)
         endpoints = json.dumps(
             [entry['endpoint'] for entry in config.entries]
         )
@@ -306,3 +310,32 @@ class ApplicationDispatcher(Dispatcher):
             return
 
         yield self.publish_event(event, target[0], target[1])
+
+
+class MessengerApplicationDispatcherConfig(ApplicationDispatcher.CONFIG_CLASS):
+    title = ConfigText('The title')
+    sub_title = ConfigText('The subtitle')
+    image_url = ConfigUrl('The URL for an image')
+
+
+class MessengerApplicationDispatcher(ApplicationDispatcher):
+
+    CONFIG_CLASS = MessengerApplicationDispatcherConfig
+
+    def make_first_reply(self, config, session, msg):
+        msg = super(MessengerApplicationDispatcher, self).make_first_reply(
+            config, session, msg)
+
+        # Magically render a Messenger menu if less than 3 items.
+        if len(config.entries) <= 3:
+            msg.helper_metadata['messenger'] = {
+                'template_type': 'generic',
+                'title': config.title,
+                'sub_title': config.sub_title,
+                'image_url': config.image_url,
+                'buttons': [{
+                    'title': entry['label'],
+                    'payload': str(index + 1)
+                } for (index, entry) in enumerate(config.entries)]
+            }
+        return msg

@@ -1,5 +1,5 @@
 FROM praekeltfoundation/vumi
-ENV WORKER_CLASS "vxapprouter.router.ApplicationDispatcher"
+ENV WORKER_CLASS "vxapprouter.router.MessengerApplicationDispatcher"
 
 COPY . /app
 WORKDIR /app
