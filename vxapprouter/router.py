@@ -298,7 +298,7 @@ class ApplicationDispatcher(Dispatcher):
         log.msg('Session for %s: %s', (user_id, session))
 
         if not session.get('active_endpoint'):
-            target = ("default", connector_name)
+            target = None
         else:
             target = self.find_target(config, event, connector_name, session)
 
