@@ -10,8 +10,8 @@ env:
   - TZ=UTC
 
 install:
-  - pip install --upgrade pip 
-  - pip install docutils==0.13.1
+  - pip install --upgrade pip
+  - pip install docutils==0.12
   - pip install coveralls
   - pip install wheel
   - pip install -r requirements-dev.txt
