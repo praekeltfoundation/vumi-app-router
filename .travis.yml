@@ -10,7 +10,9 @@ env:
   - TZ=UTC
 
 install:
-  - "pip install 'pip>=7.1.0'"
+  - pip --version
+  - pip install --user --upgrade pip
+  - pip --version
   - pip install coveralls
   - pip install wheel
   - pip install -r requirements-dev.txt
